@@ -1,8 +1,12 @@
 package com.finance.platform.transactions.api;
 
 
+import java.time.Instant;
+
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,11 +39,15 @@ public class TransactionController {
     @GetMapping
     public Page<TransactionResponse> getTransactions(
         @RequestParam Long userId,
-         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(required = false) Instant start,
+        @RequestParam(required = false) Instant end,
+        @PageableDefault(
+            sort = "createTs",
+            direction = Sort.Direction.DESC    
+        )
+        Pageable pageable
     ) {
-        PageRequest pageable = PageRequest.of(page, size);
-        return service.getTransactions(userId, pageable);
+        return service.getTransactions(userId, start, end, pageable);
     }
 
 }
