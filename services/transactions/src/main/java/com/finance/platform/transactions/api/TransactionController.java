@@ -1,6 +1,5 @@
 package com.finance.platform.transactions.api;
 
-import java.time.Instant;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,33 +12,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.finance.platform.transactions.domain.Transaction;
-import com.finance.platform.transactions.repository.TransactionRepository;
+import com.finance.platform.transactions.service.TransactionService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
-    private final TransactionRepository repository;
+    private final TransactionService service;
 
-    public TransactionController(TransactionRepository repository) {
-        this.repository = repository;
+    public TransactionController(TransactionService service) {
+        this.service = service;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createTransaction(@RequestBody @Valid CreateTransactionRequest request) {
         
-        Transaction transaction = new Transaction(
-            request.getUserId(),
-            request.getAmount(),
-            request.getCategory(),
-            Instant.now(),
-            request.getDescription()
-        );
-
-        repository.save(transaction);
+        service.createTransaction(request);
     }
 
     @GetMapping
@@ -49,15 +39,7 @@ public class TransactionController {
         @RequestParam(defaultValue = "10") int size
     ) {
         PageRequest pageable = PageRequest.of(page, size);
-        return repository.findByUserId(userId,pageable)
-               .map(tx -> new TransactionResponse(
-                    tx.getId(),
-                    tx.getUserId(),
-                    tx.getAmount(),
-                    tx.getCategory(),
-                    tx.getCreateTs(),
-                    tx.getDescription()
-               ));
+        return service.getTransactions(userId, pageable);
     }
 
 }
